@@ -34,8 +34,13 @@ public class MainActivity extends AppCompatActivity {
                     pop.showAtLocation(findViewById(R.id.linearLayout1), Gravity.CENTER, 0, -400);
                 }
             });
+
         }
 
+    }
+
+    public void onResume() {
+        super.onResume();
 
     }
 
