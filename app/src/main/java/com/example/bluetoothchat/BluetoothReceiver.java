@@ -17,6 +17,12 @@ public class BluetoothReceiver extends BroadcastReceiver {
         switch(action) {
             case BluetoothAdapter.ACTION_DISCOVERY_FINISHED:
                 ConnectedDevices.instantiate(broadcastContext, ConnectedDevices.class.getName(), new Bundle());
+                break;
+            case BluetoothAdapter.ACTION_STATE_CHANGED:
+                ConnectedDevices.instantiate(broadcastContext, ConnectedDevices.class.getName(), new Bundle());
+
+            default:
+                break;
         }
     }
 }

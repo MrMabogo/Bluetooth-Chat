@@ -10,7 +10,7 @@ import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.widget.PopupWindow;
-import android.widget.PopupMenu;
+import android.widget.Toast;
 import java.util.Set;
 import java.util.ArrayList;
 
@@ -53,17 +53,17 @@ public class MainActivity extends AppCompatActivity {
         }
 
         if (blu != null && !blu.isEnabled()) {
-                Intent bluIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_DISCOVERABLE); //request to enable bluetooth & turn on discoverable
+                Intent bluIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_DISCOVERABLE); //request to enable bluetooth & make device discoverable
                 startActivityForResult(bluIntent, 0);
-            }
-
-            blu.startDiscovery();
+        }
 
     }
 
     public void onResume() {
         super.onResume();
+        Toast.makeText(this, "Checking for bluetooth devices", Toast.LENGTH_LONG).show();
 
+        blu.startDiscovery();
     }
 
     public void onBackPressed() {
@@ -74,8 +74,15 @@ public class MainActivity extends AppCompatActivity {
         super.onBackPressed();
     }
 
-    public void onRequestPermissionResult(int code, String[] permissions, int results[]) {
-
+    @Override
+    public void onRequestPermissionsResult(int code, String[] permissions, int results[]) {
+        if(results.length != 0) {
+            if (results[0] != PackageManager.PERMISSION_GRANTED) {
+                Toast.makeText(this, "Required permissions not granted", Toast.LENGTH_LONG).show();
+                onPause();
+                onDestroy();
+            }
+        }
     }
 
 }
