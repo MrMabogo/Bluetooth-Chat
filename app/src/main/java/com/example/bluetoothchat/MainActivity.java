@@ -1,24 +1,21 @@
 package com.example.bluetoothchat;
 
 import android.Manifest;
-import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
-import android.bluetooth.BluetoothDevice;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.widget.PopupWindow;
 import android.widget.Toast;
-import java.util.Set;
-import java.util.ArrayList;
 
 
 import android.content.Context;
-import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.ViewGroup.LayoutParams;
+import android.view.View;
 import android.widget.LinearLayout;
 
 public class MainActivity extends AppCompatActivity {
@@ -33,8 +30,8 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         LayoutInflater layoutInflater = (LayoutInflater) MainActivity.this.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-        pop = new PopupWindow(layoutInflater.inflate(R.layout.pop,  null), LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
-        pop.setOutsideTouchable(true);
+       // pop = new PopupWindow(layoutInflater.inflate(R.layout.pop,  null), LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
+        //pop.setOutsideTouchable(true);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         blu = BluetoothAdapter.getDefaultAdapter();
@@ -56,22 +53,37 @@ public class MainActivity extends AppCompatActivity {
                 Intent bluIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_DISCOVERABLE); //request to enable bluetooth & make device discoverable
                 startActivityForResult(bluIntent, 0);
         }
-
     }
 
+    @Override
     public void onResume() {
         super.onResume();
         Toast.makeText(this, "Checking for bluetooth devices", Toast.LENGTH_LONG).show();
 
-        blu.startDiscovery();
+        if (!blu.isDiscovering())
+            blu.startDiscovery();
+
+        if(getIntent().getBundleExtra("CHANGE_LIST") != null)
+            loadDeviceList(getIntent().getBundleExtra("CHANGE_LIST"));
+        else
+            loadDeviceList(new Bundle());
+
     }
 
+    @Override
     public void onBackPressed() {
-        if(pop.isShowing()) {
-            pop.dismiss();
-            return;
-        }
         super.onBackPressed();
+
+        if(blu.isDiscovering())
+            blu.cancelDiscovery();
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+
+        if(blu.isDiscovering())
+            blu.cancelDiscovery();
     }
 
     @Override
@@ -83,6 +95,23 @@ public class MainActivity extends AppCompatActivity {
                 onDestroy();
             }
         }
+    }
+
+    public void onNewDevices(View view) { //button click to view discovered devices
+        Bundle bundle = new Bundle();
+        bundle.putString("BLU_ACTION", android.bluetooth.BluetoothDevice.ACTION_FOUND);
+
+        loadDeviceList(bundle);
+    }
+
+    public void onContacts(View view) { //button click to view already paired devices
+        loadDeviceList(new Bundle());
+    }
+
+    public void loadDeviceList(Bundle bundle) {
+        ConnectedDevices fragment = new ConnectedDevices();
+        fragment.setArguments(bundle);
+        getSupportFragmentManager().beginTransaction().replace(R.id.listFragment, fragment).commit();
     }
 
 }
