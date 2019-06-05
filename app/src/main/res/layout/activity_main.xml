@@ -8,6 +8,13 @@
     tools:context="com.example.bluetoothchat.MainActivity"
     android:id="@+id/linearLayout1">
 
-
+    <fragment
+        android:id="@+id/listFragment"
+        android:name="com.example.bluetoothchat.ConnectedDevices"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:layout_margin="40dp"
+        />
 
 </LinearLayout>
