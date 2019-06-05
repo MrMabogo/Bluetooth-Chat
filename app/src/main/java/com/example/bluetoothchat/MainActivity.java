@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
+import android.support.v4.app.FragmentActivity;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.widget.PopupWindow;
@@ -18,24 +19,24 @@ import android.view.ViewGroup.LayoutParams;
 import android.view.View;
 import android.widget.LinearLayout;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends FragmentActivity {
 
     final int BLUETOOTH_ADMIN_CODE = 101;
     final int BLUETOOTH_CODE = 102;
 
     BluetoothAdapter blu;
-    PopupWindow pop;
-    LinearLayout linearLayout1;
+    //PopupWindow pop;
+    //LinearLayout linearLayout1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        LayoutInflater layoutInflater = (LayoutInflater) MainActivity.this.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+        //LayoutInflater layoutInflater = (LayoutInflater) MainActivity.this.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
        // pop = new PopupWindow(layoutInflater.inflate(R.layout.pop,  null), LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
         //pop.setOutsideTouchable(true);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         blu = BluetoothAdapter.getDefaultAdapter();
-        linearLayout1 = findViewById(R.id.linearLayout1);
+        //linearLayout1 = findViewById(R.id.linearLayout1);
 
         if(ContextCompat.checkSelfPermission(getBaseContext(), Manifest.permission.BLUETOOTH) != PackageManager.PERMISSION_GRANTED) {
             String[] permissions = {Manifest.permission.BLUETOOTH};

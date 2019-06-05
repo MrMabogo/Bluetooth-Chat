@@ -28,19 +28,32 @@ public class ConnectedDevices extends Fragment {
     Map<String, BluetoothDevice> foundDevices = new TreeMap<String, BluetoothDevice>();
     BluetoothAdapter adapter;
     ListView list;
+    Bundle infoBundle = new Bundle();
 
     @Override
     public void onCreate(Bundle instance) {
         super.onCreate(instance);
 
-        String info = instance.getString("BLU_ACTION");
+        infoBundle = instance;
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        adapter = BluetoothAdapter.getDefaultAdapter();
+
+        String info;
+
+        if(infoBundle == null)
+            info = null;
+        else
+            info = infoBundle.getString("BLU_ACTION");
 
         if(info == null || info.equals(android.bluetooth.BluetoothAdapter.ACTION_STATE_CHANGED) ) {
             showPaired();
         }
-
-        if(info.equals(BluetoothDevice.ACTION_FOUND)) {
-            showFound((BluetoothDevice)instance.getParcelable("DEVICE"));
+        else if(info.equals(BluetoothDevice.ACTION_FOUND)) {
+            showFound((BluetoothDevice)infoBundle.getParcelable("DEVICE"));
         }
     }
 
