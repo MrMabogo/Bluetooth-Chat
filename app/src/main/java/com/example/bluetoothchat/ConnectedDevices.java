@@ -56,8 +56,10 @@ public class ConnectedDevices extends Fragment {
 
             ArrayAdapter<BluetoothDevice> aAdapter = new ArrayAdapter(getActivity(), R.layout.fragment_connected_devices, deviceList);
 
+
            list = getView().findViewById(R.id.deviceList);
            list.setAdapter(aAdapter);
+           aAdapter.notifyDataSetChanged();
         }
     }
 }

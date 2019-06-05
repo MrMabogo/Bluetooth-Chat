@@ -9,6 +9,7 @@ import android.content.pm.PackageManager;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.view.View;
 import android.widget.PopupWindow;
 import android.widget.Toast;
 import java.util.Set;
@@ -27,14 +28,11 @@ public class MainActivity extends AppCompatActivity {
     final int BLUETOOTH_CODE = 102;
 
     BluetoothAdapter blu;
-    PopupWindow pop;
     LinearLayout linearLayout1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         LayoutInflater layoutInflater = (LayoutInflater) MainActivity.this.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-        pop = new PopupWindow(layoutInflater.inflate(R.layout.pop,  null), LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
-        pop.setOutsideTouchable(true);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         blu = BluetoothAdapter.getDefaultAdapter();
@@ -59,6 +57,11 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
+    public void goToMessenger(View view){
+
+        startActivity(new Intent(this, Messenger.class));
+    }
+
     public void onResume() {
         super.onResume();
         Toast.makeText(this, "Checking for bluetooth devices", Toast.LENGTH_LONG).show();
@@ -66,13 +69,6 @@ public class MainActivity extends AppCompatActivity {
         blu.startDiscovery();
     }
 
-    public void onBackPressed() {
-        if(pop.isShowing()) {
-            pop.dismiss();
-            return;
-        }
-        super.onBackPressed();
-    }
 
     @Override
     public void onRequestPermissionsResult(int code, String[] permissions, int results[]) {
