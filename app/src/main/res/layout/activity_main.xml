@@ -8,11 +8,13 @@
     tools:context="com.example.bluetoothchat.MainActivity"
     android:id="@+id/linearLayout1">
 
-    <Button
-        android:text="Contact 1"
+    <fragment
+        android:id="@+id/listFragment"
+        android:name="com.example.bluetoothchat.ConnectedDevices"
         android:layout_width="match_parent"
-        android:layout_height="69dp"
-        android:onClick="goToMessenger" />
-
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:layout_margin="40dp"
+        />
 
 </LinearLayout>
