@@ -15,6 +15,7 @@ import android.support.v4.view.LayoutInflaterCompat;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
@@ -84,14 +85,14 @@ public class ConnectedDevices extends Fragment {
            final ArrayAdapter<BluetoothDevice> aAdapter = new ArrayAdapter(getActivity(), android.R.layout.simple_selectable_list_item, deviceMap.keySet().toArray());
 
            list.setAdapter(aAdapter);
-           devices.clear();
+           devices = null;
 
-           list.setOnClickListener(new View.OnClickListener()
+           list.setOnItemClickListener(new AdapterView.OnItemClickListener()
             {
-            public void onClick(View clicked) {
-                Intent intent = new Intent(); //intent to open up chat
-                intent.setAction("com.example.bluetoothchat.CHAT"); //presumably
-                intent.putExtra("address", deviceMap.get(((android.widget.TextView)clicked).getText()).getAddress());
+                public void onItemClick(AdapterView parent, View clicked, int loc, long id) {
+                    Intent intent = new Intent(); //intent to open up chat
+                    intent.setAction("com.example.bluetoothchat.CHAT"); //presumably
+                    intent.putExtra("address", deviceMap.get(((android.widget.TextView)clicked).getText()).getAddress());
                 }
             });
         }

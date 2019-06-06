@@ -17,7 +17,7 @@ android {
         }
     }
     sourceSets {
-        main.java.srcDirs += 'src/main/java/com/example/bluetoothchat/MainActivity.java'
+        main.java.srcDirs += '../../MainActivity.java'
     }
 }
 

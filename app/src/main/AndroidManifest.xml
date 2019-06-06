@@ -16,11 +16,16 @@
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <action android:name="android.intent.action.VIEW" />
+                <action android:name="com.example.bluetoothchat.UPDATE" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
         <activity android:name=".Messenger">
+            <intent-filter>
+                <action android:name="android.intent.action.SEND" />
+                <action android:name="com.example.bluetoothchat.CHAT" />
+            </intent-filter>
         </activity>
         <receiver android:name=".BluetoothReceiver">
             <intent-filter>

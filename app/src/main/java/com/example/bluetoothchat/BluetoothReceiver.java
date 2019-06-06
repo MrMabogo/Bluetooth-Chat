@@ -24,7 +24,9 @@ public class BluetoothReceiver extends BroadcastReceiver {
                 break;
         }
 
-        Intent main = new Intent();
+        Intent main = new Intent(broadcastContext, Messenger.class);
+        main.setPackage("com.example.bluetoothchat");
+        main.setAction("com.example.bluetoothchat.UPDATE");
         main.putExtra("CHANGE_LIST", arguments);
 
         broadcastContext.startActivity(main);
