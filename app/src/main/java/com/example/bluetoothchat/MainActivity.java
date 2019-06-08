@@ -2,24 +2,41 @@ package com.example.bluetoothchat;
 
 import android.Manifest;
 import android.bluetooth.BluetoothAdapter;
+import android.bluetooth.BluetoothDevice;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.pm.PackageManager;
+import android.os.Handler;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.app.FragmentActivity;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.ViewGroup;
 import android.widget.Toast;
 import android.view.View;
 
 public class MainActivity extends FragmentActivity {
-
     final int BLUETOOTH_ADMIN_CODE = 101;
     final int BLUETOOTH_CODE = 102;
     final String tag = "Main_Activity";
 
+    static IntentFilter bluFilter;
+
+    BluetoothReceiver receiver;
     BluetoothAdapter blu;
+
+    static
+    {
+        bluFilter = new IntentFilter();
+      /*  bluFilter.addAction(BluetoothAdapter.ACTION_DISCOVERY_FINISHED); unused right now
+        bluFilter.addAction(BluetoothAdapter.ACTION_DISCOVERY_STARTED); */
+        bluFilter.addAction(BluetoothAdapter.ACTION_STATE_CHANGED);
+        bluFilter.addAction(BluetoothDevice.ACTION_FOUND);
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -43,6 +60,9 @@ public class MainActivity extends FragmentActivity {
                 Intent bluIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_DISCOVERABLE); //request to enable bluetooth & make device discoverable
                 startActivityForResult(bluIntent, 0);
         }
+
+        receiver = new BluetoothReceiver();
+        registerReceiver(receiver, bluFilter);
     }
 
     @Override
@@ -52,9 +72,6 @@ public class MainActivity extends FragmentActivity {
 
         if (!blu.isDiscovering())
             blu.startDiscovery();
-
-        if(getIntent().getBundleExtra("CHANGE_LIST") != null)
-            loadDeviceList(getIntent().getBundleExtra("CHANGE_LIST"));
     }
 
     @Override
@@ -71,6 +88,8 @@ public class MainActivity extends FragmentActivity {
 
         if(blu.isDiscovering())
             blu.cancelDiscovery();
+
+        unregisterReceiver(receiver);
     }
 
     @Override
@@ -97,13 +116,47 @@ public class MainActivity extends FragmentActivity {
 
     public void loadDeviceList(Bundle bundle) {
         try {
+            if(findViewById(R.id.listFragment).getParent() != null)
+                ((ViewGroup)findViewById(R.id.listFragment).getParent()).removeView(findViewById(R.id.listFragment));
+
             ConnectedDevices fragment = new ConnectedDevices();
             fragment.setArguments(bundle);
             getSupportFragmentManager().beginTransaction().replace(R.id.listFragment, fragment).commit();
+            Log.i(tag, "done");
         }
         catch(java.lang.Exception e) {
             Log.i(tag, "Exception in loadDevice");
             Log.i(tag, e.getMessage());
+        }
+    }
+
+    //inner class only used by MainActivity allows UI to be changed directly after broadcast
+    private class BluetoothReceiver extends BroadcastReceiver {
+        private boolean CHANGED = false;
+
+        public void onReceive(Context broadcastContext, Intent intent) {
+            String action = intent.getAction();
+            Bundle arguments = new Bundle(); //to be sent to the device list
+            arguments.putString("BLU_ACTION", action);
+
+            switch(action) {
+                case BluetoothDevice.ACTION_FOUND:
+                    BluetoothDevice foundDevice = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
+                    arguments.putParcelable("DEVICE", foundDevice);
+                    break;
+            }
+
+            CHANGED = true;
+            loadDeviceList(arguments);
+        }
+
+        public boolean isChanged() {
+            boolean ret = CHANGED;
+
+            if(CHANGED)
+                CHANGED = false;
+
+            return ret;
         }
     }
 

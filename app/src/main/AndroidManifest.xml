@@ -27,13 +27,6 @@
                 <action android:name="com.example.bluetoothchat.CHAT" />
             </intent-filter>
         </activity>
-        <receiver android:name=".BluetoothReceiver">
-            <intent-filter>
-                <action android:name="android.bluetooth.adapter.action.DISCOVERY_FINISHED" />
-                <action android:name="android.bluetooth.adapter.action.DISCOVERY_STARTED" />
-                <action android:name="android.bluetooth.adapter.action.STATE_ON" />
-            </intent-filter>
-        </receiver>
 
     </application>
 

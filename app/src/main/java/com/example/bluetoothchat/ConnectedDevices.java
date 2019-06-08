@@ -45,12 +45,12 @@ public class ConnectedDevices extends Fragment {
 
         String info;
 
-        if(infoBundle == null)
+        if(infoBundle == null) //saved instance can be null
             info = null;
         else
             info = infoBundle.getString("BLU_ACTION");
 
-        if(info == null || info.equals(android.bluetooth.BluetoothAdapter.ACTION_STATE_CHANGED) ) {
+        if(info == null || info.equals(BluetoothAdapter.ACTION_STATE_CHANGED) ) {
             showPaired();
         }
         else if(info.equals(BluetoothDevice.ACTION_FOUND)) {
@@ -66,6 +66,8 @@ public class ConnectedDevices extends Fragment {
     @Override
     public void onStop() {
         super.onStop();
+
+        ((ViewGroup)list.getParent()).removeView(list); //must be taken before updating
 
         foundDevices.clear();
     }
@@ -91,7 +93,7 @@ public class ConnectedDevices extends Fragment {
             {
                 public void onItemClick(AdapterView parent, View clicked, int loc, long id) {
                     Intent intent = new Intent(); //intent to open up chat
-                    intent.setAction("com.example.bluetoothchat.CHAT"); //presumably
+                    intent.setAction("com.example.bluetoothchat.CHAT");
                     intent.putExtra("address", deviceMap.get(((android.widget.TextView)clicked).getText()).getAddress());
                 }
             });
