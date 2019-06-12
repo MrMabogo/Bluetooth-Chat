@@ -43,19 +43,7 @@ public class ConnectedDevices extends Fragment {
         super.onStart();
         adapter = BluetoothAdapter.getDefaultAdapter();
 
-        String info;
-
-        if(infoBundle == null) //saved instance can be null
-            info = null;
-        else
-            info = infoBundle.getString("BLU_ACTION");
-
-        if(info == null || info.equals(BluetoothAdapter.ACTION_STATE_CHANGED) ) {
-            showPaired();
-        }
-        else if(info.equals(BluetoothDevice.ACTION_FOUND)) {
-            showFound((BluetoothDevice)infoBundle.getParcelable("DEVICE"));
-        }
+        update(infoBundle); //chooses & updates list based on infoBundle
     }
 
     @Override
@@ -72,10 +60,26 @@ public class ConnectedDevices extends Fragment {
         foundDevices.clear();
     }
 
-    public void showPaired() { //puts the paired (bonded) devices into a ListView
+    public void update(Bundle infoB) {
+        String infoS;
+
+        if(infoB == null) //saved instance can be null
+            infoS = null;
+        else
+            infoS = infoB.getString("BLU_ACTION");
+
+        if(infoS == null || infoS.equals(BluetoothAdapter.ACTION_STATE_CHANGED) ) {
+            showPaired();
+        }
+        else if(infoS.equals(BluetoothDevice.ACTION_FOUND)) {
+            showFound((BluetoothDevice)infoB.getParcelable("DEVICE"));
+        }
+    }
+
+    private void showPaired() { //puts the paired (bonded) devices into a ListView
         list = getView().findViewById(R.id.deviceList);
 
-        if(adapter.isEnabled()) {
+        if(adapter.isEnabled() && list != null) {
            devices = adapter.getBondedDevices();
 
            final Map<String, BluetoothDevice> deviceMap = new TreeMap<String, BluetoothDevice>();
@@ -92,9 +96,9 @@ public class ConnectedDevices extends Fragment {
            list.setOnItemClickListener(new AdapterView.OnItemClickListener()
             {
                 public void onItemClick(AdapterView parent, View clicked, int loc, long id) {
-                    Intent intent = new Intent(); //intent to open up chat
-                    intent.setAction("com.example.bluetoothchat.CHAT");
+                    Intent intent = new Intent(getActivity(), Messenger.class); //intent to open up chat
                     intent.putExtra("address", deviceMap.get(((android.widget.TextView)clicked).getText()).getAddress());
+                    getActivity().startActivity(intent);
                 }
             });
         }
@@ -109,11 +113,16 @@ public class ConnectedDevices extends Fragment {
         }
     }
 
-    public void showFound(BluetoothDevice device) {
+    private void showFound(BluetoothDevice device) {
         list = getView().findViewById(R.id.deviceList);
-        devices.add(device);
 
-        foundDevices.put(device.getName(), device);
+        if(device != null) {
+            devices.add(device);
+            foundDevices.put(device.getName(), device);
+        }
+        if(foundDevices.isEmpty()) {
+            foundDevices.put("Nothing here...", null);
+        }
 
         final ArrayAdapter<BluetoothDevice> aAdapter = new ArrayAdapter(getActivity(), android.R.layout.simple_list_item_1, foundDevices.keySet().toArray());
         list.setAdapter(aAdapter);

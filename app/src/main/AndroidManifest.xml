@@ -25,6 +25,8 @@
             <intent-filter>
                 <action android:name="android.intent.action.SEND" />
                 <action android:name="com.example.bluetoothchat.CHAT" />
+
+                <category android:name="android.intent.category.APP_MESSAGING"/>
             </intent-filter>
         </activity>
 

@@ -28,6 +28,7 @@ public class MainActivity extends FragmentActivity {
 
     BluetoothReceiver receiver;
     BluetoothAdapter blu;
+    ConnectedDevices deviceFragment;
 
     static
     {
@@ -72,6 +73,8 @@ public class MainActivity extends FragmentActivity {
 
         if (!blu.isDiscovering())
             blu.startDiscovery();
+
+        deviceFragment = (ConnectedDevices)getSupportFragmentManager().findFragmentById(R.id.listFragment);
     }
 
     @Override
@@ -115,19 +118,7 @@ public class MainActivity extends FragmentActivity {
     }
 
     public void loadDeviceList(Bundle bundle) {
-        try {
-            if(findViewById(R.id.listFragment).getParent() != null)
-                ((ViewGroup)findViewById(R.id.listFragment).getParent()).removeView(findViewById(R.id.listFragment));
-
-            ConnectedDevices fragment = new ConnectedDevices();
-            fragment.setArguments(bundle);
-            getSupportFragmentManager().beginTransaction().replace(R.id.listFragment, fragment).commit();
-            Log.i(tag, "done");
-        }
-        catch(java.lang.Exception e) {
-            Log.i(tag, "Exception in loadDevice");
-            Log.i(tag, e.getMessage());
-        }
+        deviceFragment.update(bundle);
     }
 
     //inner class only used by MainActivity allows UI to be changed directly after broadcast
@@ -140,7 +131,7 @@ public class MainActivity extends FragmentActivity {
             arguments.putString("BLU_ACTION", action);
 
             switch(action) {
-                case BluetoothDevice.ACTION_FOUND:
+                case BluetoothDevice.ACTION_FOUND: //store the found device as a Parcelable
                     BluetoothDevice foundDevice = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
                     arguments.putParcelable("DEVICE", foundDevice);
                     break;
