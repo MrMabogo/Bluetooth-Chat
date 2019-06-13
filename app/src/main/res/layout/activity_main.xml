@@ -17,4 +17,11 @@
         android:layout_margin="40dp"
         />
 
+    <Button
+        android:onClick="onContact"
+        android:id="@+id/Contact"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Contact" />
+
 </LinearLayout>

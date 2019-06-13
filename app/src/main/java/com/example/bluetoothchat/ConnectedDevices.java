@@ -50,7 +50,7 @@ public class ConnectedDevices extends Fragment {
             info = infoBundle.getString("BLU_ACTION");
 
         if(info == null || info.equals(android.bluetooth.BluetoothAdapter.ACTION_STATE_CHANGED) ) {
-            showPaired();
+            //showPaired();
         }
         else if(info.equals(BluetoothDevice.ACTION_FOUND)) {
             showFound((BluetoothDevice)infoBundle.getParcelable("DEVICE"));
@@ -84,7 +84,7 @@ public class ConnectedDevices extends Fragment {
            final ArrayAdapter<BluetoothDevice> aAdapter = new ArrayAdapter(getActivity(), android.R.layout.simple_selectable_list_item, deviceMap.keySet().toArray());
 
            list.setAdapter(aAdapter);
-           devices.clear();
+          // devices.clear();
 
            list.setOnClickListener(new View.OnClickListener()
             {

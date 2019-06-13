@@ -54,6 +54,7 @@ public class MainActivity extends FragmentActivity {
                 Intent bluIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_DISCOVERABLE); //request to enable bluetooth & make device discoverable
                 startActivityForResult(bluIntent, 0);
         }
+
     }
 
     @Override
@@ -61,13 +62,13 @@ public class MainActivity extends FragmentActivity {
         super.onResume();
         Toast.makeText(this, "Checking for bluetooth devices", Toast.LENGTH_LONG).show();
 
-        if (!blu.isDiscovering())
-            blu.startDiscovery();
-
-        if(getIntent().getBundleExtra("CHANGE_LIST") != null)
-            loadDeviceList(getIntent().getBundleExtra("CHANGE_LIST"));
-        else
-            loadDeviceList(new Bundle());
+//        if (!blu.isDiscovering())
+//            blu.startDiscovery();
+//
+//        if(getIntent().getBundleExtra("CHANGE_LIST") != null)
+//            loadDeviceList(getIntent().getBundleExtra("CHANGE_LIST"));
+//        else
+//            loadDeviceList(new Bundle());
 
     }
 
@@ -102,7 +103,14 @@ public class MainActivity extends FragmentActivity {
         Bundle bundle = new Bundle();
         bundle.putString("BLU_ACTION", android.bluetooth.BluetoothDevice.ACTION_FOUND);
 
-        loadDeviceList(bundle);
+//        loadDeviceList(bundle);
+    }
+
+    public void onContact(View view){ //this is for testing the dialouge feature and saving conversations4
+        Intent in = new Intent(this, Messenger.class);
+        //value corresponds to the ID of any contact. note: may change to string
+        in.putExtra("ID", 10000);
+        startActivity(in);
     }
 
     public void onContacts(View view) { //button click to view already paired devices
@@ -110,9 +118,9 @@ public class MainActivity extends FragmentActivity {
     }
 
     public void loadDeviceList(Bundle bundle) {
-        ConnectedDevices fragment = new ConnectedDevices();
-        fragment.setArguments(bundle);
-        getSupportFragmentManager().beginTransaction().replace(R.id.listFragment, fragment).commit();
+//        ConnectedDevices fragment = new ConnectedDevices();
+//        fragment.setArguments(bundle);
+//        getSupportFragmentManager().beginTransaction().replace(R.id.listFragment, fragment).commit();
     }
 
 }

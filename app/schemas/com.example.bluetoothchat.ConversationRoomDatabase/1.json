@@ -1,0 +1,39 @@
+{
+  "formatVersion": 1,
+  "database": {
+    "version": 1,
+    "identityHash": "1696bc44d0d8023b7ed26c7383ac1fa1",
+    "entities": [
+      {
+        "tableName": "Conversation_Table",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`conversation` TEXT NOT NULL, `ID` INTEGER NOT NULL, PRIMARY KEY(`ID`))",
+        "fields": [
+          {
+            "fieldPath": "conversation",
+            "columnName": "conversation",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "ID",
+            "columnName": "ID",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "columnNames": [
+            "ID"
+          ],
+          "autoGenerate": false
+        },
+        "indices": [],
+        "foreignKeys": []
+      }
+    ],
+    "setupQueries": [
+      "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, \"1696bc44d0d8023b7ed26c7383ac1fa1\")"
+    ]
+  }
+}
