@@ -15,6 +15,7 @@ import android.support.v4.view.LayoutInflaterCompat;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
@@ -42,19 +43,7 @@ public class ConnectedDevices extends Fragment {
         super.onStart();
         adapter = BluetoothAdapter.getDefaultAdapter();
 
-        String info;
-
-        if(infoBundle == null)
-            info = null;
-        else
-            info = infoBundle.getString("BLU_ACTION");
-
-        if(info == null || info.equals(android.bluetooth.BluetoothAdapter.ACTION_STATE_CHANGED) ) {
-            showPaired();
-        }
-        else if(info.equals(BluetoothDevice.ACTION_FOUND)) {
-            showFound((BluetoothDevice)infoBundle.getParcelable("DEVICE"));
-        }
+        update(infoBundle); //chooses & updates list based on infoBundle
     }
 
     @Override
@@ -66,13 +55,31 @@ public class ConnectedDevices extends Fragment {
     public void onStop() {
         super.onStop();
 
+        ((ViewGroup)list.getParent()).removeView(list); //must be taken before updating
+
         foundDevices.clear();
     }
 
-    public void showPaired() { //puts the paired (bonded) devices into a ListView
+    public void update(Bundle infoB) {
+        String infoS;
+
+        if(infoB == null) //saved instance can be null
+            infoS = null;
+        else
+            infoS = infoB.getString("BLU_ACTION");
+
+        if(infoS == null || infoS.equals(BluetoothAdapter.ACTION_STATE_CHANGED) ) {
+            showPaired();
+        }
+        else if(infoS.equals(BluetoothDevice.ACTION_FOUND)) {
+            showFound((BluetoothDevice)infoB.getParcelable("DEVICE"));
+        }
+    }
+
+    private void showPaired() { //puts the paired (bonded) devices into a ListView
         list = getView().findViewById(R.id.deviceList);
 
-        if(adapter.isEnabled()) {
+        if(adapter.isEnabled() && list != null) {
            devices = adapter.getBondedDevices();
 
            final Map<String, BluetoothDevice> deviceMap = new TreeMap<String, BluetoothDevice>();
@@ -84,14 +91,14 @@ public class ConnectedDevices extends Fragment {
            final ArrayAdapter<BluetoothDevice> aAdapter = new ArrayAdapter(getActivity(), android.R.layout.simple_selectable_list_item, deviceMap.keySet().toArray());
 
            list.setAdapter(aAdapter);
-           devices.clear();
+           devices = null;
 
-           list.setOnClickListener(new View.OnClickListener()
+           list.setOnItemClickListener(new AdapterView.OnItemClickListener()
             {
-            public void onClick(View clicked) {
-                Intent intent = new Intent(); //intent to open up chat
-                intent.setAction("com.example.bluetoothchat.CHAT"); //presumably
-                intent.putExtra("address", deviceMap.get(((android.widget.TextView)clicked).getText()).getAddress());
+                public void onItemClick(AdapterView parent, View clicked, int loc, long id) {
+                    Intent intent = new Intent(getActivity(), Messenger.class); //intent to open up chat
+                    intent.putExtra("address", deviceMap.get(((android.widget.TextView)clicked).getText()).getAddress());
+                    getActivity().startActivity(intent);
                 }
             });
         }
@@ -106,11 +113,16 @@ public class ConnectedDevices extends Fragment {
         }
     }
 
-    public void showFound(BluetoothDevice device) {
+    private void showFound(BluetoothDevice device) {
         list = getView().findViewById(R.id.deviceList);
-        devices.add(device);
 
-        foundDevices.put(device.getName(), device);
+        if(device != null) {
+            devices.add(device);
+            foundDevices.put(device.getName(), device);
+        }
+        if(foundDevices.isEmpty()) {
+            foundDevices.put("Nothing here...", null);
+        }
 
         final ArrayAdapter<BluetoothDevice> aAdapter = new ArrayAdapter(getActivity(), android.R.layout.simple_list_item_1, foundDevices.keySet().toArray());
         list.setAdapter(aAdapter);
