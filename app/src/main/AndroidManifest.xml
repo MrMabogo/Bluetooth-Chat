@@ -17,19 +17,19 @@
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <action android:name="android.intent.action.VIEW" />
+                <action android:name="com.example.bluetoothchat.UPDATE" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
         <activity android:name=".Messenger">
-        </activity>
-        <receiver android:name=".BluetoothReceiver">
             <intent-filter>
-                <action android:name="android.bluetooth.adapter.action.DISCOVERY_FINISHED" />
-                <action android:name="android.bluetooth.adapter.action.DISCOVERY_STARTED" />
-                <action android:name="android.bluetooth.adapter.action.STATE_ON" />
+                <action android:name="android.intent.action.SEND" />
+                <action android:name="com.example.bluetoothchat.CHAT" />
+
+                <category android:name="android.intent.category.APP_MESSAGING"/>
             </intent-filter>
-        </receiver>
+        </activity>
 
     </application>
 

@@ -5,6 +5,7 @@
 package com.example.bluetoothchat;
 
 import android.bluetooth.BluetoothAdapter;
+import android.bluetooth.BluetoothClass;
 import android.bluetooth.BluetoothDevice;
 import android.content.Intent;
 import android.os.Bundle;
@@ -15,6 +16,7 @@ import android.support.v4.view.LayoutInflaterCompat;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
@@ -41,19 +43,11 @@ public class ConnectedDevices extends Fragment {
     public void onStart() {
         super.onStart();
         adapter = BluetoothAdapter.getDefaultAdapter();
-
-        String info;
-
-        if(infoBundle == null)
-            info = null;
-        else
-            info = infoBundle.getString("BLU_ACTION");
-
-        if(info == null || info.equals(android.bluetooth.BluetoothAdapter.ACTION_STATE_CHANGED) ) {
-            //showPaired();
+        try {
+            update(infoBundle); //chooses & updates list based on infoBundle
         }
-        else if(info.equals(BluetoothDevice.ACTION_FOUND)) {
-            showFound((BluetoothDevice)infoBundle.getParcelable("DEVICE"));
+        catch (Exception e){
+            System.out.println(e);
         }
     }
 
@@ -66,13 +60,36 @@ public class ConnectedDevices extends Fragment {
     public void onStop() {
         super.onStop();
 
+        ((ViewGroup)list.getParent()).removeView(list); //must be taken before updating
+
         foundDevices.clear();
     }
 
-    public void showPaired() { //puts the paired (bonded) devices into a ListView
+    public void update(Bundle infoB) {
+        String infoS;
+
+        if(infoB == null) //saved instance can be null
+            infoS = null;
+        else
+            infoS = infoB.getString("BLU_ACTION");
+
+        if(infoS == null || infoS.equals(BluetoothAdapter.ACTION_STATE_CHANGED) ) {
+            try {
+                showPaired();
+            }
+            catch (Exception e){
+                System.out.println(e);
+            }
+        }
+        else if(infoS.equals(BluetoothDevice.ACTION_FOUND)) {
+            showFound((BluetoothDevice)infoB.getParcelable("DEVICE"));
+        }
+    }
+
+    private void showPaired() { //puts the paired (bonded) devices into a ListView
         list = getView().findViewById(R.id.deviceList);
 
-        if(adapter.isEnabled()) {
+        if(adapter.isEnabled() && list != null) {
            devices = adapter.getBondedDevices();
 
            final Map<String, BluetoothDevice> deviceMap = new TreeMap<String, BluetoothDevice>();
@@ -84,14 +101,17 @@ public class ConnectedDevices extends Fragment {
            final ArrayAdapter<BluetoothDevice> aAdapter = new ArrayAdapter(getActivity(), android.R.layout.simple_selectable_list_item, deviceMap.keySet().toArray());
 
            list.setAdapter(aAdapter);
-          // devices.clear();
+           devices = null;
 
-           list.setOnClickListener(new View.OnClickListener()
+           list.setOnItemClickListener(new AdapterView.OnItemClickListener()
             {
-            public void onClick(View clicked) {
-                Intent intent = new Intent(); //intent to open up chat
-                intent.setAction("com.example.bluetoothchat.CHAT"); //presumably
-                intent.putExtra("address", deviceMap.get(((android.widget.TextView)clicked).getText()).getAddress());
+                public void onItemClick(AdapterView parent, View clicked, int loc, long id) {
+                    Intent intent = new Intent(getActivity(), Messenger.class); //intent to open up chat
+                    BluetoothDevice device = deviceMap.get(((android.widget.TextView)clicked).getText());
+                    intent.putExtra("address", device.getAddress());
+                    System.out.println(device.toString());
+                    intent.putExtra("ID", getID(device.toString()));
+                    getActivity().startActivity(intent);
                 }
             });
         }
@@ -101,16 +121,28 @@ public class ConnectedDevices extends Fragment {
             empty.add("Nothing here...");
 
             final ArrayAdapter<String> eAdapter = new ArrayAdapter(getActivity(), android.R.layout.simple_list_item_1, empty);
-
             list.setAdapter(eAdapter);
         }
     }
 
-    public void showFound(BluetoothDevice device) {
-        list = getView().findViewById(R.id.deviceList);
-        devices.add(device);
+    private int getID(String address){
+        int id = 0;
+        for(int i = 0; i < address.length(); i++){
+            id += (int) address.charAt(i);
+        }
+        return id;
+    }
 
-        foundDevices.put(device.getName(), device);
+    private void showFound(BluetoothDevice device) {
+        list = getView().findViewById(R.id.deviceList);
+
+        if(device != null) {
+            devices.add(device);
+            foundDevices.put(device.getName(), device);
+        }
+        if(foundDevices.isEmpty()) {
+            foundDevices.put("Nothing here...", null);
+        }
 
         final ArrayAdapter<BluetoothDevice> aAdapter = new ArrayAdapter(getActivity(), android.R.layout.simple_list_item_1, foundDevices.keySet().toArray());
         list.setAdapter(aAdapter);
