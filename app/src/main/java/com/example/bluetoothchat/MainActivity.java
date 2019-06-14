@@ -2,41 +2,48 @@ package com.example.bluetoothchat;
 
 import android.Manifest;
 import android.bluetooth.BluetoothAdapter;
+import android.bluetooth.BluetoothDevice;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.pm.PackageManager;
+import android.os.Handler;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.app.FragmentActivity;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.widget.PopupWindow;
+import android.util.Log;
+import android.view.ViewGroup;
 import android.widget.Toast;
-
-
-import android.content.Context;
-import android.view.LayoutInflater;
-import android.view.ViewGroup.LayoutParams;
 import android.view.View;
-import android.widget.LinearLayout;
 
 public class MainActivity extends FragmentActivity {
-
     final int BLUETOOTH_ADMIN_CODE = 101;
     final int BLUETOOTH_CODE = 102;
+    final String tag = "Main_Activity";
 
+    static IntentFilter bluFilter;
+
+    BluetoothReceiver receiver;
     BluetoothAdapter blu;
-    //PopupWindow pop;
-    //LinearLayout linearLayout1;
+    ConnectedDevices deviceFragment;
+
+    static
+    {
+        bluFilter = new IntentFilter();
+      /*  bluFilter.addAction(BluetoothAdapter.ACTION_DISCOVERY_FINISHED); unused right now
+        bluFilter.addAction(BluetoothAdapter.ACTION_DISCOVERY_STARTED); */
+        bluFilter.addAction(BluetoothAdapter.ACTION_STATE_CHANGED);
+        bluFilter.addAction(BluetoothDevice.ACTION_FOUND);
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        //LayoutInflater layoutInflater = (LayoutInflater) MainActivity.this.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-       // pop = new PopupWindow(layoutInflater.inflate(R.layout.pop,  null), LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
-        //pop.setOutsideTouchable(true);
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         blu = BluetoothAdapter.getDefaultAdapter();
-        //linearLayout1 = findViewById(R.id.linearLayout1);
 
         if(ContextCompat.checkSelfPermission(getBaseContext(), Manifest.permission.BLUETOOTH) != PackageManager.PERMISSION_GRANTED) {
             String[] permissions = {Manifest.permission.BLUETOOTH};
@@ -55,6 +62,8 @@ public class MainActivity extends FragmentActivity {
                 startActivityForResult(bluIntent, 0);
         }
 
+        receiver = new BluetoothReceiver();
+        registerReceiver(receiver, bluFilter);
     }
 
     @Override
@@ -62,14 +71,10 @@ public class MainActivity extends FragmentActivity {
         super.onResume();
         Toast.makeText(this, "Checking for bluetooth devices", Toast.LENGTH_LONG).show();
 
-//        if (!blu.isDiscovering())
-//            blu.startDiscovery();
-//
-//        if(getIntent().getBundleExtra("CHANGE_LIST") != null)
-//            loadDeviceList(getIntent().getBundleExtra("CHANGE_LIST"));
-//        else
-//            loadDeviceList(new Bundle());
+        if (!blu.isDiscovering())
+            blu.startDiscovery();
 
+        deviceFragment = (ConnectedDevices)getSupportFragmentManager().findFragmentById(R.id.listFragment);
     }
 
     @Override
@@ -86,10 +91,12 @@ public class MainActivity extends FragmentActivity {
 
         if(blu.isDiscovering())
             blu.cancelDiscovery();
+
+        unregisterReceiver(receiver);
     }
 
     @Override
-    public void onRequestPermissionsResult(int code, String[] permissions, int results[]) {
+    public void onRequestPermissionsResult(int code, String[] permissions, int[] results) {
         if(results.length != 0) {
             if (results[0] != PackageManager.PERMISSION_GRANTED) {
                 Toast.makeText(this, "Required permissions not granted", Toast.LENGTH_LONG).show();
@@ -103,7 +110,15 @@ public class MainActivity extends FragmentActivity {
         Bundle bundle = new Bundle();
         bundle.putString("BLU_ACTION", android.bluetooth.BluetoothDevice.ACTION_FOUND);
 
-//        loadDeviceList(bundle);
+        loadDeviceList(bundle);
+    }
+
+    public void onContacts(View view) { //button click to view already paired devices
+        loadDeviceList(new Bundle());
+    }
+
+    public void loadDeviceList(Bundle bundle) {
+        deviceFragment.update(bundle);
     }
 
     public void onContact(View view){ //this is for testing the dialouge feature and saving conversations4
@@ -113,14 +128,34 @@ public class MainActivity extends FragmentActivity {
         startActivity(in);
     }
 
-    public void onContacts(View view) { //button click to view already paired devices
-        loadDeviceList(new Bundle());
-    }
+    //inner class only used by MainActivity allows UI to be changed directly after broadcast
+    private class BluetoothReceiver extends BroadcastReceiver {
+        private boolean CHANGED = false;
 
-    public void loadDeviceList(Bundle bundle) {
-//        ConnectedDevices fragment = new ConnectedDevices();
-//        fragment.setArguments(bundle);
-//        getSupportFragmentManager().beginTransaction().replace(R.id.listFragment, fragment).commit();
+        public void onReceive(Context broadcastContext, Intent intent) {
+            String action = intent.getAction();
+            Bundle arguments = new Bundle(); //to be sent to the device list
+            arguments.putString("BLU_ACTION", action);
+
+            switch(action) {
+                case BluetoothDevice.ACTION_FOUND: //store the found device as a Parcelable
+                    BluetoothDevice foundDevice = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
+                    arguments.putParcelable("DEVICE", foundDevice);
+                    break;
+            }
+
+            CHANGED = true;
+            loadDeviceList(arguments);
+        }
+
+        public boolean isChanged() {
+            boolean ret = CHANGED;
+
+            if(CHANGED)
+                CHANGED = false;
+
+            return ret;
+        }
     }
 
 }
