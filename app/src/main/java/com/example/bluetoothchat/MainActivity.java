@@ -9,17 +9,28 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.os.Handler;
+import android.support.design.widget.FloatingActionButton;
+import android.support.design.widget.NavigationView;
+import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.app.FragmentActivity;
+import android.support.v4.view.GravityCompat;
+import android.support.v4.widget.DrawerLayout;
+import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.ViewGroup;
 import android.widget.Toast;
 import android.view.View;
 
-public class MainActivity extends FragmentActivity {
+public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener{
+    final int DISCOVERABLE_REQ = 0;
+    final int ENABLE_REQ = 1;
     final int BLUETOOTH_ADMIN_CODE = 101;
     final int BLUETOOTH_CODE = 102;
     final String tag = "Main_Activity";
@@ -43,7 +54,24 @@ public class MainActivity extends FragmentActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        blu = BluetoothAdapter.getDefaultAdapter();
+
+        Toolbar toolbar = findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+        FloatingActionButton fab = findViewById(R.id.fab);
+        fab.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
+                        .setAction("Action", null).show();
+            }
+        });
+        DrawerLayout drawer = findViewById(R.id.drawer_layout);
+        NavigationView navigationView = findViewById(R.id.nav_view);
+        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
+                this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
+        drawer.addDrawerListener(toggle);
+        toggle.syncState();
+        navigationView.setNavigationItemSelectedListener(this);
 
         if(ContextCompat.checkSelfPermission(getBaseContext(), Manifest.permission.BLUETOOTH) != PackageManager.PERMISSION_GRANTED) {
             String[] permissions = {Manifest.permission.BLUETOOTH};
@@ -57,13 +85,37 @@ public class MainActivity extends FragmentActivity {
             android.support.v4.app.ActivityCompat.requestPermissions(this, permissions, BLUETOOTH_ADMIN_CODE);
         }
 
-        if (blu != null && !blu.isEnabled()) {
-                Intent bluIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_DISCOVERABLE); //request to enable bluetooth & make device discoverable
-                startActivityForResult(bluIntent, 0);
-        }
-
         receiver = new BluetoothReceiver();
         registerReceiver(receiver, bluFilter);
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+
+        blu = BluetoothAdapter.getDefaultAdapter(); //ask for discovery when the activity becomes visible
+
+        if (blu != null && !blu.isEnabled()) {
+            Intent bluIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_DISCOVERABLE); //request to enable bluetooth & make device discoverable
+            startActivityForResult(bluIntent, DISCOVERABLE_REQ);
+        }
+    }
+
+    @Override
+    public void onActivityResult(int reqCode, int resCode, Intent data) {
+        if(reqCode == DISCOVERABLE_REQ) {
+            if(resCode != RESULT_OK) {
+                Toast.makeText(this, "Unable to add contacts", Toast.LENGTH_LONG).show();
+                Intent bluIntent2 = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+                startActivityForResult(bluIntent2, ENABLE_REQ);
+            }
+        }
+        else if(reqCode == ENABLE_REQ) {
+            if(resCode != RESULT_OK) {
+                Toast.makeText(this, "Bluetooth is required", Toast.LENGTH_LONG).show();
+                finish();
+            }
+        }
     }
 
     @Override
@@ -71,25 +123,79 @@ public class MainActivity extends FragmentActivity {
         super.onResume();
         Toast.makeText(this, "Checking for bluetooth devices", Toast.LENGTH_LONG).show();
 
-        if (!blu.isDiscovering())
+        if (blu != null && !blu.isDiscovering())
             blu.startDiscovery();
 
         deviceFragment = (ConnectedDevices)getSupportFragmentManager().findFragmentById(R.id.listFragment);
     }
 
     @Override
-    public void onBackPressed() {
-        super.onBackPressed();
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // Inflate the menu; this adds items to the action bar if it is present.
+        getMenuInflater().inflate(R.menu.main, menu);
+        return true;
+    }
 
-        if(blu.isDiscovering())
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        // Handle action bar item clicks here. The action bar will
+        // automatically handle clicks on the Home/Up button, so long
+        // as you specify a parent activity in AndroidManifest.xml.
+        int id = item.getItemId();
+
+        //noinspection SimplifiableIfStatement
+        if (id == R.id.action_settings) {
+            return true;
+        }
+
+        return super.onOptionsItemSelected(item);
+    }
+
+    @SuppressWarnings("StatementWithEmptyBody")
+    @Override
+    public boolean onNavigationItemSelected(MenuItem item) {
+        // Handle navigation view item clicks here.
+        int id = item.getItemId();
+
+        if (id == R.id.nav_exit) {
+            // Handle the camera action
+        } else if (id == R.id.nav_locate) {
+
+        }  else if (id == R.id.nav_savedmessages) {
+
+        } else if (id == R.id.nav_settings) {
+
+        }
+
+        DrawerLayout drawer = findViewById(R.id.drawer_layout);
+        drawer.closeDrawer(GravityCompat.START);
+        return true;
+    }
+
+    @Override
+    public void onBackPressed() {
+        DrawerLayout drawer = findViewById(R.id.drawer_layout);
+        if (drawer.isDrawerOpen(GravityCompat.START)) {
+            drawer.closeDrawer(GravityCompat.START);
+        } else {
+            super.onBackPressed();
+        }
+
+        if(blu != null && blu.isDiscovering())
             blu.cancelDiscovery();
+    }
+
+    public void settingButtonPressed(View view){
+        Intent intent = new Intent(Intent.ACTION_VIEW);
+        intent.setType("application/vnd.javadude.data");
+
     }
 
     @Override
     public void onDestroy() {
         super.onDestroy();
 
-        if(blu.isDiscovering())
+        if(blu != null && blu.isDiscovering())
             blu.cancelDiscovery();
 
         unregisterReceiver(receiver);
@@ -100,8 +206,7 @@ public class MainActivity extends FragmentActivity {
         if(results.length != 0) {
             if (results[0] != PackageManager.PERMISSION_GRANTED) {
                 Toast.makeText(this, "Required permissions not granted", Toast.LENGTH_LONG).show();
-                onPause();
-                onDestroy();
+                finish();
             }
         }
     }

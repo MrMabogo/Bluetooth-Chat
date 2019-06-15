@@ -60,7 +60,8 @@ public class ConnectedDevices extends Fragment {
     public void onStop() {
         super.onStop();
 
-        ((ViewGroup)list.getParent()).removeView(list); //must be taken before updating
+        if(list != null)
+            ((ViewGroup)list.getParent()).removeView(list); //must be taken off before updating
 
         foundDevices.clear();
     }
