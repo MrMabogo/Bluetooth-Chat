@@ -226,13 +226,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         deviceFragment.update(bundle);
     }
 
-    public void onContact(View view){ //this is for testing the dialouge feature and saving conversations4
-        Intent in = new Intent(this, Messenger.class);
-        //value corresponds to the ID of any contact. note: may change to string
-        in.putExtra("ID", 10000);
-        startActivity(in);
-    }
-
     //inner class only used by MainActivity allows UI to be changed directly after broadcast
     private class BluetoothReceiver extends BroadcastReceiver {
         private boolean CHANGED = false;

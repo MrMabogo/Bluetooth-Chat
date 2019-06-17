@@ -110,7 +110,6 @@ public class ConnectedDevices extends Fragment {
                     Intent intent = new Intent(getActivity(), Messenger.class); //intent to open up chat
                     BluetoothDevice device = deviceMap.get(((android.widget.TextView)clicked).getText());
                     intent.putExtra("address", device.getAddress());
-                    System.out.println(device.toString());
                     intent.putExtra("ID", getID(device.toString()));
                     getActivity().startActivity(intent);
                 }

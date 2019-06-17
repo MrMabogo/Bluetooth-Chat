@@ -1,4 +1,4 @@
-package com.example.bluetoothmessage;
+package com.example.bluetoothchat;
 
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
