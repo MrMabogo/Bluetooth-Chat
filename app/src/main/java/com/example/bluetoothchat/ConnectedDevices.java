@@ -60,7 +60,8 @@ public class ConnectedDevices extends Fragment {
     public void onStop() {
         super.onStop();
 
-        ((ViewGroup)list.getParent()).removeView(list); //must be taken before updating
+        if(list != null)
+            ((ViewGroup)list.getParent()).removeView(list); //must be taken off before updating
 
         foundDevices.clear();
     }
@@ -109,7 +110,6 @@ public class ConnectedDevices extends Fragment {
                     Intent intent = new Intent(getActivity(), Messenger.class); //intent to open up chat
                     BluetoothDevice device = deviceMap.get(((android.widget.TextView)clicked).getText());
                     intent.putExtra("address", device.getAddress());
-                    System.out.println(device.toString());
                     intent.putExtra("ID", getID(device.toString()));
                     getActivity().startActivity(intent);
                 }
