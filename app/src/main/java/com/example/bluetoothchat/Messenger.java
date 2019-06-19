@@ -13,7 +13,7 @@ import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
 
-import org.w3c.dom.Text;
+import org.w3c.dom.Text; // arbitrary
 
 import java.util.ArrayList;
 import java.util.Arrays;
