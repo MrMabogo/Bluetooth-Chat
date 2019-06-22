@@ -87,9 +87,4 @@ public class Messenger extends Activity {
         }
         return list;
     }
-
-
-
-
-
 }
