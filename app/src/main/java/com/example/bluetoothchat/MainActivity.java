@@ -9,6 +9,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.os.Handler;
+import android.os.Process;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
 import android.support.design.widget.Snackbar;
@@ -28,7 +29,7 @@ import android.view.ViewGroup;
 import android.widget.Toast;
 import android.view.View;
 
-public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener{
+public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
     final int DISCOVERABLE_REQ = 0;
     final int ENABLE_REQ = 1;
     final int BLUETOOTH_ADMIN_CODE = 101;
@@ -41,8 +42,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     BluetoothAdapter blu;
     ConnectedDevices deviceFragment;
 
-    static
-    {
+    static {
         bluFilter = new IntentFilter();
       /*  bluFilter.addAction(BluetoothAdapter.ACTION_DISCOVERY_FINISHED); unused right now
         bluFilter.addAction(BluetoothAdapter.ACTION_DISCOVERY_STARTED); */
@@ -57,29 +57,22 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-        FloatingActionButton fab = findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
-            }
-        });
+
         DrawerLayout drawer = findViewById(R.id.drawer_layout);
         NavigationView navigationView = findViewById(R.id.nav_view);
+        navigationView.setNavigationItemSelectedListener(this);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
                 this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
         drawer.addDrawerListener(toggle);
         toggle.syncState();
-        navigationView.setNavigationItemSelectedListener(this);
 
-        if(ContextCompat.checkSelfPermission(getBaseContext(), Manifest.permission.BLUETOOTH) != PackageManager.PERMISSION_GRANTED) {
+        if (ContextCompat.checkSelfPermission(getBaseContext(), Manifest.permission.BLUETOOTH) != PackageManager.PERMISSION_GRANTED) {
             String[] permissions = {Manifest.permission.BLUETOOTH};
 
             android.support.v4.app.ActivityCompat.requestPermissions(this, permissions, BLUETOOTH_CODE);
         }
 
-        if(ContextCompat.checkSelfPermission(getBaseContext(), Manifest.permission.BLUETOOTH_ADMIN) != PackageManager.PERMISSION_GRANTED) {
+        if (ContextCompat.checkSelfPermission(getBaseContext(), Manifest.permission.BLUETOOTH_ADMIN) != PackageManager.PERMISSION_GRANTED) {
             String[] permissions = {Manifest.permission.BLUETOOTH_ADMIN};
 
             android.support.v4.app.ActivityCompat.requestPermissions(this, permissions, BLUETOOTH_ADMIN_CODE);
@@ -103,15 +96,14 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
     @Override
     public void onActivityResult(int reqCode, int resCode, Intent data) {
-        if(reqCode == DISCOVERABLE_REQ) {
-            if(resCode != RESULT_OK) {
+        if (reqCode == DISCOVERABLE_REQ) {
+            if (resCode != RESULT_OK) {
                 Toast.makeText(this, "Unable to add contacts", Toast.LENGTH_LONG).show();
                 Intent bluIntent2 = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
                 startActivityForResult(bluIntent2, ENABLE_REQ);
             }
-        }
-        else if(reqCode == ENABLE_REQ) {
-            if(resCode != RESULT_OK) {
+        } else if (reqCode == ENABLE_REQ) {
+            if (resCode != RESULT_OK) {
                 Toast.makeText(this, "Bluetooth is required", Toast.LENGTH_LONG).show();
                 finish();
             }
@@ -126,7 +118,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         if (blu != null && !blu.isDiscovering())
             blu.startDiscovery();
 
-        deviceFragment = (ConnectedDevices)getSupportFragmentManager().findFragmentById(R.id.listFragment);
+        deviceFragment = (ConnectedDevices) getSupportFragmentManager().findFragmentById(R.id.listFragment);
     }
 
     @Override
@@ -155,17 +147,24 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     @Override
     public boolean onNavigationItemSelected(MenuItem item) {
         // Handle navigation view item clicks here.
-        int id = item.getItemId();
-
-        if (id == R.id.nav_exit) {
-            // Handle the camera action
-        } else if (id == R.id.nav_locate) {
-
-        }  else if (id == R.id.nav_savedmessages) {
-
-        } else if (id == R.id.nav_settings) {
-
+        switch (item.getItemId()) {
+            case R.id.nav_exit:
+                moveTaskToBack(true);
+                android.os.Process.killProcess(android.os.Process.myPid());
+                System.exit(1);
+                break;
+            case R.id.nav_locate:
+                break;
+            case R.id.nav_savedmessages:
+                getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container,
+                        new FragmentSavedMessages()).commit();
+                break;
+            case R.id.nav_settings:
+                getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container,
+                        new FragmentSettings()).commit();
+                break;
         }
+
 
         DrawerLayout drawer = findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
@@ -181,11 +180,11 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             super.onBackPressed();
         }
 
-        if(blu != null && blu.isDiscovering())
+        if (blu != null && blu.isDiscovering())
             blu.cancelDiscovery();
     }
 
-    public void settingButtonPressed(View view){
+    public void settingButtonPressed(View view) {
         Intent intent = new Intent(Intent.ACTION_VIEW);
         intent.setType("application/vnd.javadude.data");
 
@@ -195,7 +194,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     public void onDestroy() {
         super.onDestroy();
 
-        if(blu != null && blu.isDiscovering())
+        if (blu != null && blu.isDiscovering())
             blu.cancelDiscovery();
 
         unregisterReceiver(receiver);
@@ -203,7 +202,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
     @Override
     public void onRequestPermissionsResult(int code, String[] permissions, int[] results) {
-        if(results.length != 0) {
+        if (results.length != 0) {
             if (results[0] != PackageManager.PERMISSION_GRANTED) {
                 Toast.makeText(this, "Required permissions not granted", Toast.LENGTH_LONG).show();
                 finish();
@@ -235,7 +234,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             Bundle arguments = new Bundle(); //to be sent to the device list
             arguments.putString("BLU_ACTION", action);
 
-            switch(action) {
+            switch (action) {
                 case BluetoothDevice.ACTION_FOUND: //store the found device as a Parcelable
                     BluetoothDevice foundDevice = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
                     arguments.putParcelable("DEVICE", foundDevice);
@@ -249,7 +248,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         public boolean isChanged() {
             boolean ret = CHANGED;
 
-            if(CHANGED)
+            if (CHANGED)
                 CHANGED = false;
 
             return ret;
