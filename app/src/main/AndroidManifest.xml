@@ -30,6 +30,8 @@
                 <category android:name="android.intent.category.APP_MESSAGING"/>
             </intent-filter>
         </activity>
+        <activity android:name=".SavedMsgActivity" android:parentActivityName=".MainActivity"/>
+        <activity android:name=".SettingsActivity" android:parentActivityName=".MainActivity"/>
 
     </application>
 

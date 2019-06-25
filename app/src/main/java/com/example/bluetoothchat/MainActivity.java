@@ -26,6 +26,7 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.Toast;
 import android.view.View;
 
@@ -35,6 +36,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     final int BLUETOOTH_ADMIN_CODE = 101;
     final int BLUETOOTH_CODE = 102;
     final String tag = "Main_Activity";
+    Button go;
 
     static IntentFilter bluFilter;
 
@@ -80,6 +82,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
         receiver = new BluetoothReceiver();
         registerReceiver(receiver, bluFilter);
+
     }
 
     @Override
@@ -121,12 +124,12 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         deviceFragment = (ConnectedDevices) getSupportFragmentManager().findFragmentById(R.id.listFragment);
     }
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.main, menu);
-        return true;
-    }
+//    @Override
+//    public boolean onCreateOptionsMenu(Menu menu) {
+//        // Inflate the menu; this adds items to the action bar if it is present.
+//        getMenuInflater().inflate(R.menu.main, menu);
+//        return true;
+//    }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
@@ -136,9 +139,9 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         int id = item.getItemId();
 
         //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
-        }
+//        if (id == R.id.action_settings) {
+//            return true;
+//        }
 
         return super.onOptionsItemSelected(item);
     }
@@ -156,12 +159,14 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             case R.id.nav_locate:
                 break;
             case R.id.nav_savedmessages:
-                getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container,
-                        new FragmentSavedMessages()).commit();
+                Intent intent = new Intent(this, SavedMsgActivity.class);
+                startActivity(intent);
+                //opens the SavedMsgActivity xml
                 break;
             case R.id.nav_settings:
-                getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container,
-                        new FragmentSettings()).commit();
+               Intent intentSet = new Intent(this,SettingsActivity.class);
+               startActivity(intentSet);
+               //opens SettingsActivity.xml
                 break;
         }
 

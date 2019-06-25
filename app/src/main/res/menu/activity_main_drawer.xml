@@ -14,7 +14,7 @@
         <item
             android:id="@+id/nav_savedmessages"
             android:icon="@drawable/ic_savedmessages"
-            android:title="@string/menu_savedmessages" />
+            android:title="@string/menu_savedmessages"/>
     </group>
 
     <group

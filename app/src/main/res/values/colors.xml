@@ -4,6 +4,7 @@
     <color name="colorPrimaryDark">#00574B</color>
     <color name="colorAccent">#D81B60</color>
     <color name="colorDivider">#696969</color>
-    <color name="colorFAB">#87CEEB</color>
-    <color name="colorLB">#87CEEB</color>
+    <color name="colorFAB">#238475</color>
+    <color name="colorLB">#94bee9</color>
+    <color name="colorB">#3f96fb</color>
 </resources>
