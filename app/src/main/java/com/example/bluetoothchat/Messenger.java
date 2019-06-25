@@ -5,6 +5,7 @@ import android.arch.persistence.db.SupportSQLiteOpenHelper;
 import android.arch.persistence.room.DatabaseConfiguration;
 import android.arch.persistence.room.InvalidationTracker;
 import android.arch.persistence.room.Room;
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.ArrayAdapter;
@@ -63,6 +64,14 @@ public class Messenger extends Activity {
         list.setAdapter(arrayAdapter);
         System.out.println();
         message.getText().clear();
+    }
+
+    @Override
+    public void onBackPressed() {
+        Intent finishing = new Intent(); //to notify main activity
+        finishing.setAction("com.example.bluetoothchat.LIST");
+
+        finish(); //exits the chat activity and back to list screen
     }
 
     @Override

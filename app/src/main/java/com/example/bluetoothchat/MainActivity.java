@@ -37,6 +37,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     final String tag = "Main_Activity";
 
     static IntentFilter bluFilter;
+    String curPage = "start"; //start or chat
+    Bundle status;
 
     BluetoothReceiver receiver;
     BluetoothAdapter blu;
@@ -48,10 +50,13 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         bluFilter.addAction(BluetoothAdapter.ACTION_DISCOVERY_STARTED); */
         bluFilter.addAction(BluetoothAdapter.ACTION_STATE_CHANGED);
         bluFilter.addAction(BluetoothDevice.ACTION_FOUND);
+        bluFilter.addAction("com.example.bluetoothchat.CHAT");
+        bluFilter.addAction("com.example.bluetoothchat.LIST");
     }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        status = savedInstanceState;
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
@@ -113,12 +118,23 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     @Override
     public void onResume() {
         super.onResume();
-        Toast.makeText(this, "Checking for bluetooth devices", Toast.LENGTH_LONG).show();
-
-        if (blu != null && !blu.isDiscovering())
-            blu.startDiscovery();
 
         deviceFragment = (ConnectedDevices) getSupportFragmentManager().findFragmentById(R.id.listFragment);
+
+        if(status.getString("Page").equals("list")) {
+            if (status.getString("List").equals("discovered")) {
+                Toast.makeText(this, "Checking for bluetooth devices", Toast.LENGTH_LONG).show();
+                if (blu != null && !blu.isDiscovering())
+                    blu.startDiscovery();
+
+                onNewDevices(findViewById(R.id.foundBtn));
+            } //default screen is already paired devices
+        }
+        else if(status.getString("Page").equals("chat")) {
+            deviceFragment.navToChat(status.getParcelable("device"), new Intent(this, Messenger.class));
+        }
+        else
+            status.putString("Page", "list");
     }
 
     @Override
@@ -180,6 +196,10 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             super.onBackPressed();
         }
 
+        if(curPage.equals("chat"))
+            deviceFragment.update(null); //placeholder
+
+
         if (blu != null && blu.isDiscovering())
             blu.cancelDiscovery();
     }
@@ -210,14 +230,24 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         }
     }
 
+    @Override
+    public void onRestoreInstanceState(Bundle state) {
+        super.onRestoreInstanceState(state);
+        status = state;
+    }
+
     public void onNewDevices(View view) { //button click to view discovered devices
         Bundle bundle = new Bundle();
         bundle.putString("BLU_ACTION", android.bluetooth.BluetoothDevice.ACTION_FOUND);
+
+        status.putString("List", "discovered");
 
         loadDeviceList(bundle);
     }
 
     public void onContacts(View view) { //button click to view already paired devices
+        status.putString("List", "paired");
+
         loadDeviceList(new Bundle());
     }
 
@@ -238,6 +268,13 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 case BluetoothDevice.ACTION_FOUND: //store the found device as a Parcelable
                     BluetoothDevice foundDevice = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
                     arguments.putParcelable("DEVICE", foundDevice);
+                    break;
+                case "com.example.bluetoothchat.CHAT":
+                    status.putString("Page", "chat");
+                    status.putParcelable("Device", intent.getParcelableExtra("device"));
+                    break;
+                case "com.example.bluetoothchat.LIST":
+                    status.putString("Page", "list");
                     break;
             }
 

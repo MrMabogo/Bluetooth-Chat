@@ -108,10 +108,12 @@ public class ConnectedDevices extends Fragment {
             {
                 public void onItemClick(AdapterView parent, View clicked, int loc, long id) {
                     Intent intent = new Intent(getActivity(), Messenger.class); //intent to open up chat
-                    BluetoothDevice device = deviceMap.get(((android.widget.TextView)clicked).getText());
-                    intent.putExtra("address", device.getAddress());
-                    intent.putExtra("ID", getID(device.toString()));
-                    getActivity().startActivity(intent);
+
+                    intent.setAction("com.example.bluetoothchat.CHAT");
+                    Parcelable device = deviceMap.get(((android.widget.TextView)clicked).getText());
+                    navToChat(device, intent);
+                    intent.putExtra("device", device);
+                    getActivity().sendBroadcast(intent); //to notify main activity
                 }
             });
         }
@@ -123,6 +125,14 @@ public class ConnectedDevices extends Fragment {
             final ArrayAdapter<String> eAdapter = new ArrayAdapter(getActivity(), android.R.layout.simple_list_item_1, empty);
             list.setAdapter(eAdapter);
         }
+    }
+
+    public void navToChat(Parcelable device, Intent intent) {
+        BluetoothDevice target = (BluetoothDevice)device;
+        intent.putExtra("address", target.getAddress());
+        intent.putExtra("ID", getID(target.toString()));
+        getActivity().startActivity(intent);
+
     }
 
     private int getID(String address){
@@ -146,5 +156,12 @@ public class ConnectedDevices extends Fragment {
 
         final ArrayAdapter<BluetoothDevice> aAdapter = new ArrayAdapter(getActivity(), android.R.layout.simple_list_item_1, foundDevices.keySet().toArray());
         list.setAdapter(aAdapter);
+
+        list.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            public void onItemClick(AdapterView parent, View clicked, int loc, long id) {
+                BluetoothDevice device = foundDevices.get(((android.widget.TextView)clicked).getText());
+                device.createBond();
+            }
+        });
     }
 }
