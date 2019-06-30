@@ -97,6 +97,12 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             Intent bluIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_DISCOVERABLE); //request to enable bluetooth & make device discoverable
             startActivityForResult(bluIntent, DISCOVERABLE_REQ);
         }
+
+        if(status == null) {
+            status = new Bundle();
+            status.putString("Page", "list");
+            status.putString("List", "paired");
+        }
     }
 
     @Override
@@ -121,20 +127,23 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
         deviceFragment = (ConnectedDevices) getSupportFragmentManager().findFragmentById(R.id.listFragment);
 
-        if(status.getString("Page").equals("list")) {
-            if (status.getString("List").equals("discovered")) {
-                Toast.makeText(this, "Checking for bluetooth devices", Toast.LENGTH_LONG).show();
-                if (blu != null && !blu.isDiscovering())
-                    blu.startDiscovery();
+        if(status != null) {
+            if (status.getString("Page").equals("list")) {
+                if (status.getString("List").equals("discovered")) {
+                    Toast.makeText(this, "Checking for bluetooth devices", Toast.LENGTH_LONG).show();
+                    if (blu != null && !blu.isDiscovering())
+                        blu.startDiscovery();
 
-                onNewDevices(findViewById(R.id.foundBtn));
-            } //default screen is already paired devices
+                    onNewDevices(findViewById(R.id.foundBtn));
+                } //default screen is already paired devices
+            } else {
+                deviceFragment.navToChat(status.getParcelable("device"), new Intent(this, Messenger.class));
+            }
         }
-        else if(status.getString("Page").equals("chat")) {
-            deviceFragment.navToChat(status.getParcelable("device"), new Intent(this, Messenger.class));
-        }
-        else
+        else {
+            status = new Bundle();
             status.putString("Page", "list");
+        }
     }
 
     @Override
@@ -196,10 +205,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             super.onBackPressed();
         }
 
-        if(curPage.equals("chat"))
-            deviceFragment.update(null); //placeholder
-
-
         if (blu != null && blu.isDiscovering())
             blu.cancelDiscovery();
     }
@@ -234,6 +239,12 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     public void onRestoreInstanceState(Bundle state) {
         super.onRestoreInstanceState(state);
         status = state;
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle state) {
+        state = (Bundle)status.clone();
+        super.onSaveInstanceState(state);
     }
 
     public void onNewDevices(View view) { //button click to view discovered devices

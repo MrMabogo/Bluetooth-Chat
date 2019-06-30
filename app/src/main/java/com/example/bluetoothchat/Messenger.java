@@ -7,6 +7,9 @@ import android.arch.persistence.room.InvalidationTracker;
 import android.arch.persistence.room.Room;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
@@ -19,8 +22,10 @@ import org.w3c.dom.Text;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
 
-public class Messenger extends Activity {
+public class Messenger extends AppCompatActivity {
+    final String tag = "Messenger_Activity";
     //ID must be initialized only in the on create function
     int ID;
     //may change delimiter in the future
@@ -37,6 +42,12 @@ public class Messenger extends Activity {
         super.onCreate(savedInstanceState);
         ID = getIntent().getExtras().getInt("ID");
         setContentView(R.layout.messenger);
+
+        Toolbar toolbar = findViewById(R.id.messageToolbar);
+        setSupportActionBar(toolbar);
+        getSupportActionBar().setTitle("Messenger");
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+
         message = (EditText) findViewById(R.id.message);
         list = findViewById(R.id.scroller);
         arrayAdapter = new ArrayAdapter<>(this, android.R.layout.simple_expandable_list_item_1, dialogue);
@@ -68,10 +79,9 @@ public class Messenger extends Activity {
 
     @Override
     public void onBackPressed() {
-        Intent finishing = new Intent(); //to notify main activity
+        Intent finishing = new Intent(this, MainActivity.class); //to notify main activity
         finishing.setAction("com.example.bluetoothchat.LIST");
-
-        finish(); //exits the chat activity and back to list screen
+        navigateUpTo(finishing); //exits the chat activity and back to list screen
     }
 
     @Override
