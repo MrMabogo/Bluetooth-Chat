@@ -7,7 +7,6 @@ package com.example.bluetoothchat;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothClass;
 import android.bluetooth.BluetoothDevice;
-import android.bluetooth.BluetoothSocket;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Parcelable;
@@ -21,23 +20,22 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
-import java.io.Serializable;
 import java.util.Map;
 import java.util.Set;
 import java.util.ArrayList;
 import java.util.TreeMap;
 
-public class ConnectedDevices extends Fragment{
-    public Set<BluetoothDevice> devices;
+public class ConnectedDevices extends Fragment {
+    Set<BluetoothDevice> devices;
     Map<String, BluetoothDevice> foundDevices = new TreeMap<String, BluetoothDevice>();
     BluetoothAdapter adapter;
     ListView list;
     Bundle infoBundle = new Bundle();
-    BluetoothSocket ssocket;
 
     @Override
     public void onCreate(Bundle instance) {
         super.onCreate(instance);
+
         infoBundle = instance;
     }
 
@@ -110,10 +108,12 @@ public class ConnectedDevices extends Fragment{
             {
                 public void onItemClick(AdapterView parent, View clicked, int loc, long id) {
                     Intent intent = new Intent(getActivity(), Messenger.class); //intent to open up chat
-                    BluetoothDevice device = deviceMap.get(((android.widget.TextView)clicked).getText());
-                    intent.putExtra("address", device.getAddress());
-                    intent.putExtra("ID", getID(device.toString()));
-                    getActivity().startActivity(intent);
+
+                    intent.setAction("com.example.bluetoothchat.CHAT");
+                    Parcelable device = deviceMap.get(((android.widget.TextView)clicked).getText());
+                    navToChat(device, intent);
+                    intent.putExtra("device", device);
+                    getActivity().sendBroadcast(intent); //to notify main activity
                 }
             });
         }
@@ -127,7 +127,15 @@ public class ConnectedDevices extends Fragment{
         }
     }
 
-    public int getID(String address){
+    public void navToChat(Parcelable device, Intent intent) {
+        BluetoothDevice target = (BluetoothDevice)device;
+        intent.putExtra("address", target.getAddress());
+        intent.putExtra("ID", getID(target.toString()));
+        getActivity().startActivity(intent);
+
+    }
+
+    private int getID(String address){
         int id = 0;
         for(int i = 0; i < address.length(); i++){
             id += (int) address.charAt(i);
@@ -148,5 +156,12 @@ public class ConnectedDevices extends Fragment{
 
         final ArrayAdapter<BluetoothDevice> aAdapter = new ArrayAdapter(getActivity(), android.R.layout.simple_list_item_1, foundDevices.keySet().toArray());
         list.setAdapter(aAdapter);
+
+        list.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            public void onItemClick(AdapterView parent, View clicked, int loc, long id) {
+                BluetoothDevice device = foundDevices.get(((android.widget.TextView)clicked).getText());
+                device.createBond();
+            }
+        });
     }
 }
