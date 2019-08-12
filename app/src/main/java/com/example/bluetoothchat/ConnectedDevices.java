@@ -7,6 +7,7 @@ package com.example.bluetoothchat;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothClass;
 import android.bluetooth.BluetoothDevice;
+import android.bluetooth.BluetoothSocket;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Parcelable;
@@ -20,22 +21,23 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
+import java.io.Serializable;
 import java.util.Map;
 import java.util.Set;
 import java.util.ArrayList;
 import java.util.TreeMap;
 
-public class ConnectedDevices extends Fragment {
-    Set<BluetoothDevice> devices;
+public class ConnectedDevices extends Fragment{
+    public Set<BluetoothDevice> devices;
     Map<String, BluetoothDevice> foundDevices = new TreeMap<String, BluetoothDevice>();
     BluetoothAdapter adapter;
     ListView list;
     Bundle infoBundle = new Bundle();
+    BluetoothSocket ssocket;
 
     @Override
     public void onCreate(Bundle instance) {
         super.onCreate(instance);
-
         infoBundle = instance;
     }
 
@@ -125,7 +127,7 @@ public class ConnectedDevices extends Fragment {
         }
     }
 
-    private int getID(String address){
+    public int getID(String address){
         int id = 0;
         for(int i = 0; i < address.length(); i++){
             id += (int) address.charAt(i);

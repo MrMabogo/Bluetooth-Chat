@@ -1,14 +1,19 @@
 package com.example.bluetoothchat;
 
 import android.Manifest;
+import android.arch.persistence.room.Room;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
+import android.bluetooth.BluetoothServerSocket;
+import android.bluetooth.BluetoothSocket;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.os.Handler;
+import android.os.Message;
+import android.provider.SyncStateContract;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
 import android.support.design.widget.Snackbar;
@@ -28,6 +33,11 @@ import android.view.ViewGroup;
 import android.widget.Toast;
 import android.view.View;
 
+import java.io.IOException;
+import java.net.Socket;
+
+import static com.example.bluetoothchat.Messenger.conversation;
+
 public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener{
     final int DISCOVERABLE_REQ = 0;
     final int ENABLE_REQ = 1;
@@ -36,6 +46,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     final String tag = "Main_Activity";
 
     static IntentFilter bluFilter;
+    public static BluetoothSocket ssocket = null;
+    AcceptThread acceptThread;
 
     BluetoothReceiver receiver;
     BluetoothAdapter blu;
@@ -87,6 +99,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
         receiver = new BluetoothReceiver();
         registerReceiver(receiver, bluFilter);
+
     }
 
     @Override
@@ -94,6 +107,10 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         super.onStart();
 
         blu = BluetoothAdapter.getDefaultAdapter(); //ask for discovery when the activity becomes visible
+        ssocket = null;
+        acceptThread = null;
+        acceptThread = new AcceptThread();
+        acceptThread.start();
 
         if (blu != null && !blu.isEnabled()) {
             Intent bluIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_DISCOVERABLE); //request to enable bluetooth & make device discoverable
@@ -201,6 +218,11 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         unregisterReceiver(receiver);
     }
 
+    public void onPause(){
+        super.onPause();
+
+    }
+
     @Override
     public void onRequestPermissionsResult(int code, String[] permissions, int[] results) {
         if(results.length != 0) {
@@ -255,5 +277,63 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             return ret;
         }
     }
+    //for server side connections
+    private class AcceptThread extends Thread {
+        // The local server socket
+        private final BluetoothServerSocket mmServerSocket;
+
+        public AcceptThread() {
+            BluetoothServerSocket tmp = null;
+
+            // Create a new listening server socket
+
+            try{
+                tmp = blu.listenUsingInsecureRfcommWithServiceRecord(Constants.name, Constants.ID);
+            }
+            catch(IOException e){
+                System.out.println("Error while attempting to create listining socket " + e);
+            }
+
+
+            mmServerSocket = tmp;
+        }
+
+        public void run() {
+
+            BluetoothSocket socket = null;
+
+            // Listen to the server socket if we're not connected
+            while (socket == null && blu != null) {
+                try {
+                    socket = mmServerSocket.accept();
+                } catch (IOException e) {
+                    break;
+                }
+            }
+            ssocket = socket;
+            final String name = socket.getRemoteDevice().getName();
+            System.out.println("Connection Established with: " + name + " on server side");
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    Toast.makeText(getApplicationContext(), "Connected to: " + name, Toast.LENGTH_LONG).show();
+                }
+            });
+
+            return;
+
+        }
+
+        public void cancel() {
+            try{
+                mmServerSocket.close();
+            }
+            catch (IOException e){
+                System.out.println("Error closing socket");
+            }
+        }
+
+        }
+
 
 }
