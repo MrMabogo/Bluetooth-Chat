@@ -40,14 +40,14 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     String curPage = "start"; //start or chat
     Bundle status;
 
+    Boolean homepage;
+
     BluetoothReceiver receiver;
     BluetoothAdapter blu;
     ConnectedDevices deviceFragment;
 
     static {
         bluFilter = new IntentFilter();
-      /*  bluFilter.addAction(BluetoothAdapter.ACTION_DISCOVERY_FINISHED); unused right now
-        bluFilter.addAction(BluetoothAdapter.ACTION_DISCOVERY_STARTED); */
         bluFilter.addAction(BluetoothAdapter.ACTION_STATE_CHANGED);
         bluFilter.addAction(BluetoothDevice.ACTION_FOUND);
         bluFilter.addAction("com.example.bluetoothchat.CHAT");
@@ -197,6 +197,12 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     }
 
     @Override
+    public void onSaveInstanceState(Bundle savedState) {
+        super.onSaveInstanceState(savedState);
+
+    }
+
+    @Override
     public void onBackPressed() {
         DrawerLayout drawer = findViewById(R.id.drawer_layout);
         if (drawer.isDrawerOpen(GravityCompat.START)) {
@@ -302,5 +308,5 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             return ret;
         }
     }
-
 }
+
