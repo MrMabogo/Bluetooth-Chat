@@ -49,14 +49,14 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     String curPage = "start"; //start or chat
     Bundle status;
 
+    Boolean homepage;
+
     BluetoothReceiver receiver;
     BluetoothAdapter blu;
     ConnectedDevices deviceFragment;
 
     static {
         bluFilter = new IntentFilter();
-      /*  bluFilter.addAction(BluetoothAdapter.ACTION_DISCOVERY_FINISHED); unused right now
-        bluFilter.addAction(BluetoothAdapter.ACTION_DISCOVERY_STARTED); */
         bluFilter.addAction(BluetoothAdapter.ACTION_STATE_CHANGED);
         bluFilter.addAction(BluetoothDevice.ACTION_FOUND);
         bluFilter.addAction("com.example.bluetoothchat.CHAT");
@@ -95,7 +95,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
         receiver = new BluetoothReceiver();
         registerReceiver(receiver, bluFilter);
-
     }
 
     @Override
@@ -206,10 +205,15 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         }
 
 
-
         DrawerLayout drawer = findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
         return true;
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle savedState) {
+        super.onSaveInstanceState(savedState);
+
     }
 
     @Override
@@ -257,11 +261,11 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         status = state;
     }
 
-    @Override
-    public void onSaveInstanceState(Bundle state) {
-        state = (Bundle)status.clone();
-        super.onSaveInstanceState(state);
-    }
+   // @Override
+//    public void onSaveInstanceState(Bundle state) {
+//        state = (Bundle)status.clone();
+//        super.onSaveInstanceState(state);
+//    }
 
     public void onNewDevices(View view) { //button click to view discovered devices
         Bundle bundle = new Bundle();
@@ -378,3 +382,4 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
 
 }
+
