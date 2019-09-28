@@ -211,12 +211,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     }
 
     @Override
-    public void onSaveInstanceState(Bundle savedState) {
-        super.onSaveInstanceState(savedState);
-
-    }
-
-    @Override
     public void onBackPressed() {
         DrawerLayout drawer = findViewById(R.id.drawer_layout);
         if (drawer.isDrawerOpen(GravityCompat.START)) {
@@ -261,11 +255,11 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         status = state;
     }
 
-   // @Override
-//    public void onSaveInstanceState(Bundle state) {
-//        state = (Bundle)status.clone();
-//        super.onSaveInstanceState(state);
-//    }
+    @Override
+    public void onSaveInstanceState(Bundle state) {
+        state = (Bundle)status.clone();
+        super.onSaveInstanceState(state);
+    }
 
     public void onNewDevices(View view) { //button click to view discovered devices
         Bundle bundle = new Bundle();
